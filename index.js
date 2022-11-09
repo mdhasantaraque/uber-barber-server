@@ -38,8 +38,9 @@ async function run() {
       const result = await reviewCollection.insertOne(review);
       res.send(result);
     });
-    app.get("/reviews/", async (req, res) => {
-      const query = {};
+    app.get("/reviews/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { serviceId: id };
       const cursor = reviewCollection.find(query);
       const reviews = await cursor.toArray();
       res.send(reviews);
