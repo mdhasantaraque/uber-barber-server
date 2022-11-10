@@ -16,25 +16,6 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
-function verifyJWT(req, res, next) {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader) {
-    return res.status(401).send({ message: "Authorization Required" });
-  }
-  const token = authHeader.split(" ")[1];
-
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
-    if (err) {
-      return res.status(403).send({
-        message: "User is not authorized to access",
-      });
-    }
-    req.decoded = decoded;
-    next();
-  });
-}
-
 async function run() {
   try {
     const serviceCollection = client.db("barber").collection("services");
@@ -85,10 +66,7 @@ async function run() {
 
     // review api
 
-    app.get("/reviews", verifyJWT, async (req, res) => {
-      if (decoded.email !== req.query.email) {
-        res.status(403).send({ message: "User is not authorized to access" });
-      }
+    app.get("/reviews", async (req, res) => {
       let query = {};
 
       if (req.query.email) {
@@ -96,7 +74,6 @@ async function run() {
           email: req.query.email,
         };
       }
-
       const cursor = reviewCollection.find(query);
       const reviews = await cursor.toArray();
       res.send(reviews);
